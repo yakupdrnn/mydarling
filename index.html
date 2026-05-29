@@ -98,6 +98,127 @@
             transition: 0.3s;
         }
 
+        #success-msg {
+            display: none;
+            font-size: 1.2rem;
+            color: #2ecc71;
+            font-weight: 600;
+            margin-top: 20px;
+            animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes successPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) translateY(-20px);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .success-checkmark {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        /* --- MÜZİK OYNATICI --- */
+        .music-player {
+            position: fixed;
+            top: 25px; right: 90px; 
+            background: var(--card-bg);
+            border-radius: 50px;
+            box-shadow: 0 4px 15px var(--shadow);
+            display: flex;
+            align-items: center;
+            z-index: 10000;
+            border: 1px solid rgba(181, 101, 118, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px 12px;
+            gap: 8px;
+        }
+
+        .music-player:hover {
+            padding: 8px 16px;
+            gap: 10px;
+        }
+
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            max-width: 0;
+            overflow: hidden;
+            transition: opacity 0.3s, max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .music-player:hover .music-controls {
+            opacity: 1;
+            max-width: 500px;
+        }
+
+        .music-player button {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .music-player button:hover {
+            transform: scale(1.15);
+            color: var(--primary-color);
+        }
+
+        .volume-slider {
+            width: 60px;
+            height: 3px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .music-time {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            min-width: 35px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 3px;
+            background: rgba(181, 101, 118, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .music-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
         /* --- TEMA BUTONU (Her zaman en üstte) --- */
         .theme-toggle {
             position: fixed;
@@ -215,14 +336,33 @@
         <span class="icon">🌙</span>
     </div>
 
+    <!-- MÜZİK OYNATICI -->
+    <div class="music-player">
+        <span class="music-icon">🎵</span>
+        <div class="music-controls">
+            <button id="play-btn" onclick="togglePlay()" title="Oynat/Duraklat">▶️</button>
+            <div class="progress-bar" id="progress-bar" onclick="seekMusic(event)">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <div class="music-time" id="music-time">0:00</div>
+            <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="30" onchange="changeVolume(this.value)" title="Ses Seviyesi">
+            <button id="volume-icon" onclick="toggleMute()" title="Sesi Aç/Kapat">🔊</button>
+        </div>
+    </div>
+
+    <audio id="music-audio" loop preload="auto">
+        <source src="img/music.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- PAROLA EKRANI -->
     <div id="password-overlay">
         <div class="password-box">
             <h2>Bizim Hikayemiz</h2>
             <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-light);">Tanışma tarihimiz?</p>
             <input type="password" id="pass-input" placeholder="Parola">
-            <button onclick="checkPassword()">Kontrol et</button>
+            <button onclick="checkPassword()">Onayla</button>
             <p id="error-msg" style="color: #e56b6f; margin-top: 15px; font-size: 0.8rem; display: none;">...</p>
+            <p id="success-msg"><span class="success-checkmark">✓</span>Parola Doğru!</p>
         </div>
     </div>
 
@@ -305,22 +445,116 @@ Seni düşününce içimdeki o sıcaklık hiç azalmıyor. Çok şanslı hissedi
             const input = document.getElementById('pass-input').value.toLowerCase();
             const overlay = document.getElementById('password-overlay');
             const error = document.getElementById('error-msg');
+            const success = document.getElementById('success-msg');
 
             if (input === '19subat') {
-                overlay.style.opacity = '0';
+                error.style.display = 'none';
+                success.style.display = 'block';
+                document.getElementById('pass-input').disabled = true;
+                document.querySelector('.password-box button').disabled = true;
+                
+                // Müzik 2 saniye sonra başlat
                 setTimeout(() => {
-                    overlay.style.display = 'none';
-                    document.body.classList.remove('is-locked');
-                }, 500);
+                    const audio = document.getElementById('music-audio');
+                    audio.play().catch(err => console.log('Müzik oynatma hatası:', err));
+                    document.getElementById('play-btn').textContent = '⏸️';
+                }, 2000);
+                
+                setTimeout(() => {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        document.body.classList.remove('is-locked');
+                    }, 500);
+                }, 1500);
                 sessionStorage.setItem('site-auth', 'true');
             } else {
                 error.style.display = 'block';
+                success.style.display = 'none';
                 document.getElementById('pass-input').value = '';
             }
         }
 
         document.getElementById('pass-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
         if (sessionStorage.getItem('site-auth') === 'true') { document.getElementById('password-overlay').style.display = 'none'; }
+
+        // === MÜZİK OYNATICI ===
+        const audio = document.getElementById('music-audio');
+        const playBtn = document.getElementById('play-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.getElementById('progress-fill');
+        const musicTime = document.getElementById('music-time');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeIcon = document.getElementById('volume-icon');
+        let isMuted = false;
+
+        // Parola geçildiyse müzik başlat
+        if (sessionStorage.getItem('site-auth') === 'true') {
+            setTimeout(() => {
+                audio.play().catch(err => console.log('Müzik oynatma hatası:', err));
+                playBtn.textContent = '⏸️';
+            }, 300);
+        }
+
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play();
+                playBtn.textContent = '⏸️';
+            } else {
+                audio.pause();
+                playBtn.textContent = '▶️';
+            }
+        }
+
+        function changeVolume(value) {
+            audio.volume = value / 100;
+            updateVolumeIcon();
+            isMuted = false;
+            volumeIcon.textContent = '🔊';
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            if (isMuted) {
+                audio.volume = 0;
+                volumeIcon.textContent = '🔇';
+            } else {
+                audio.volume = volumeSlider.value / 100;
+                updateVolumeIcon();
+            }
+        }
+
+        function updateVolumeIcon() {
+            const vol = audio.volume;
+            if (vol === 0) volumeIcon.textContent = '🔇';
+            else if (vol < 0.5) volumeIcon.textContent = '🔉';
+            else volumeIcon.textContent = '🔊';
+        }
+
+        function seekMusic(e) {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = percent + '%';
+                
+                const mins = Math.floor(audio.currentTime / 60);
+                const secs = Math.floor(audio.currentTime % 60);
+                musicTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', () => {
+            playBtn.textContent = '▶️';
+        });
+
+        // Varsayılan ses seviyesi
+        audio.volume = 0.3;
 
         // === KOYU MOD (Parola ekranında da çalışır) ===
         const themeToggle = document.getElementById('theme-toggle');
