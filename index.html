@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A ♥ Y | Bizim Hikayemiz</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -18,7 +17,9 @@
             --text-light: #6d5959;
             --card-bg: #ffffff;
             --shadow: rgba(181, 101, 118, 0.1);
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --glow: rgba(181, 101, 118, 0.4);
+            --transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --smooth: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         body.dark-mode {
@@ -29,104 +30,275 @@
             --text-light: #d1b1b1;
             --card-bg: #2d2424;
             --shadow: rgba(0, 0, 0, 0.4);
+            --glow: rgba(255, 142, 145, 0.35);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
             overflow-x: hidden;
             line-height: 1.6;
-            transition: var(--transition);
+            transition: background-color 0.6s ease, color 0.6s ease;
         }
 
-        /* --- PAROLA EKRANI --- */
+        /* ====== PASSWORD OVERLAY ====== */
         #password-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
             background: var(--bg-color);
-            z-index: 9999;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: var(--transition);
+            z-index: 20000;
+            flex-direction: column;
         }
 
-        .password-box {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px var(--shadow);
-            max-width: 400px;
+        .lock-wrap {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 18px;
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            display: block;
+            line-height: 1;
+            filter: drop-shadow(0 4px 12px rgba(194,99,122,0.3));
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            animation: lockBreathe 3s ease-in-out infinite;
+        }
+
+        @keyframes lockBreathe {
+            0%, 100% { transform: scale(1) rotate(-3deg); }
+            50% { transform: scale(1.06) rotate(3deg); }
+        }
+
+        .lock-wrap.unlocking .lock-icon {
+            animation: unlockSpin 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+
+        @keyframes unlockSpin {
+            0% { transform: scale(1) rotate(0deg); }
+            30% { transform: scale(1.3) rotate(-20deg); }
+            60% { transform: scale(1.5) rotate(15deg); }
+            80% { transform: scale(1.2) rotate(-5deg); }
+            100% { transform: scale(1.1) rotate(0deg); opacity: 0.3; }
+        }
+
+        .lock-ring {
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .lock-wrap.unlocking .lock-ring {
+            animation: ringFlash 0.6s ease-out forwards;
+        }
+
+        @keyframes ringFlash {
+            0% { border-color: transparent; transform: scale(0.8); opacity: 0; }
+            40% { border-color: var(--primary-color); transform: scale(1.4); opacity: 1; }
+            100% { border-color: transparent; transform: scale(2); opacity: 0; }
+        }
+
+        .password-card {
             width: 90%;
-            transition: var(--transition);
-            border: 1px solid rgba(181, 101, 118, 0.1);
-        }
-
-        .password-box h2 {
-            font-family: 'Playfair Display', serif;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
-
-        .password-box input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--bg-color);
-            border-radius: 10px;
-            margin-bottom: 20px;
-            outline: none;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 44px 38px 38px;
+            box-shadow: 0 20px 60px var(--glow), 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(194, 99, 122, 0.12);
             text-align: center;
-            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .password-card h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.7rem;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .password-card .subtitle {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            margin-bottom: 28px;
+            letter-spacing: 0.3px;
+        }
+
+        .input-wrap {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 13px 46px 13px 16px;
+            border: 1.5px solid rgba(194, 99, 122, 0.2);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
             background: var(--bg-color);
             color: var(--text-dark);
-            transition: var(--transition);
+            outline: none;
+            text-align: center;
+            letter-spacing: 2px;
+            transition: border 0.3s, box-shadow 0.3s;
         }
 
-        .password-box button {
-            background: var(--primary-color);
+        .input-wrap input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(194, 99, 122, 0.1);
+        }
+
+        .input-wrap input.shake {
+            animation: shake 0.4s ease;
+            border-color: #e56b6f !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            cursor: pointer;
+            border-radius: 14px;
+            font-size: 0.95rem;
             font-weight: 600;
-            transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: opacity 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 20px rgba(229,107,111,0.3);
+            position: relative;
+            overflow: hidden;
         }
 
-        #success-msg {
+        .submit-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(229,107,111,0.4); }
+        .submit-btn:active { transform: scale(0.97); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .error-msg {
+            font-size: 0.78rem;
+            color: #e56b6f;
+            margin-top: 12px;
             display: none;
-            font-size: 1.2rem;
-            color: #2ecc71;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-msg {
+            display: none;
+            margin-top: 16px;
+            animation: successPop 0.7s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        .success-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(46,204,113,0.1);
+            border: 1px solid rgba(46,204,113,0.3);
+            color: #27ae60;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
             font-weight: 600;
-            margin-top: 20px;
-            animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes successPop {
-            0% {
-                opacity: 0;
-                transform: scale(0.5) translateY(-20px);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+            0% { opacity: 0; transform: scale(0.6) translateY(10px); }
+            60% { transform: scale(1.08); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .success-checkmark {
-            display: inline-block;
-            margin-right: 8px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- MÜZİK OYNATICI --- */
+        .unlock-flash {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(255,182,193,0.5) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            display: none;
+        }
+
+        .unlock-flash.active {
+            display: block;
+            animation: flashOut 1.2s ease-out forwards;
+        }
+
+        @keyframes flashOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .burst-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 60;
+            font-size: var(--fs);
+            animation: burst var(--bd) ease-out forwards;
+            display: none;
+        }
+
+        .burst-heart.active {
+            display: block;
+        }
+
+        @keyframes burst {
+            0%   { transform: translate(0,0) scale(0); opacity: 1; }
+            100% { transform: translate(var(--bx), var(--by)) scale(1) rotate(var(--br)); opacity: 0; }
+        }
+
+        /* === CANVAS PARTICLE SYSTEM === */
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* === FLOATING EMOJIS === */
+        .float-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatUp var(--dur) linear forwards;
+            bottom: -60px;
+            font-size: var(--size);
+            opacity: 0;
+            filter: drop-shadow(0 2px 6px rgba(229,107,111,0.4));
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(0) rotate(var(--rot-start)) scale(0.5); opacity: 0; }
+            10%  { opacity: 0.7; transform: translateY(-8vh) rotate(calc(var(--rot-start) + 5deg)) scale(1); }
+            90%  { opacity: 0.4; }
+            100% { transform: translateY(-115vh) rotate(var(--rot-end)) scale(0.8); opacity: 0; }
+        }
+
+        /* ====== MÜZİK OYNATICI ====== */
         .music-player {
             position: fixed;
             top: 25px; right: 90px; 
@@ -137,189 +309,393 @@
             align-items: center;
             z-index: 10000;
             border: 1px solid rgba(181, 101, 118, 0.2);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             padding: 8px 12px;
             gap: 8px;
         }
-
-        .music-player:hover {
-            padding: 8px 16px;
-            gap: 10px;
-        }
-
+        .music-player:hover { padding: 8px 16px; gap: 10px; }
         .music-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            opacity: 0;
-            max-width: 0;
-            overflow: hidden;
-            transition: opacity 0.3s, max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 10px;
+            opacity: 0; max-width: 0; overflow: hidden;
+            transition: opacity 0.5s ease, max-width 0.5s ease;
         }
-
-        .music-player:hover .music-controls {
-            opacity: 1;
-            max-width: 500px;
-        }
-
+        .music-player:hover .music-controls { opacity: 1; max-width: 500px; }
         .music-player button {
-            background: none;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
-            padding: 4px 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            background: none; border: none; font-size: 1rem; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 4px 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
+        .music-player button:hover { transform: scale(1.15); color: var(--primary-color); }
+        .volume-slider { width: 60px; height: 3px; cursor: pointer; accent-color: var(--primary-color); flex-shrink: 0; }
+        .music-time { font-size: 0.7rem; color: var(--text-light); min-width: 35px; text-align: center; flex-shrink: 0; }
+        .progress-bar { width: 100px; height: 3px; background: rgba(181,101,118,0.2); border-radius: 2px; cursor: pointer; position: relative; flex-shrink: 0; }
+        .progress-bar-fill { height: 100%; background: var(--primary-color); border-radius: 2px; width: 0%; transition: width 0.15s ease-out; }
+        .music-icon { font-size: 1.1rem; flex-shrink: 0; }
 
-        .music-player button:hover {
-            transform: scale(1.15);
-            color: var(--primary-color);
-        }
-
-        .volume-slider {
-            width: 60px;
-            height: 3px;
-            cursor: pointer;
-            accent-color: var(--primary-color);
-            flex-shrink: 0;
-        }
-
-        .music-time {
-            font-size: 0.7rem;
-            color: var(--text-light);
-            min-width: 35px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .progress-bar {
-            width: 100px;
-            height: 3px;
-            background: rgba(181, 101, 118, 0.2);
-            border-radius: 2px;
-            cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--primary-color);
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-
-        .music-icon {
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        /* --- TEMA BUTONU (Her zaman en üstte) --- */
+        /* ====== TEMA BUTONU ====== */
         .theme-toggle {
-            position: fixed;
-            top: 25px; right: 25px; width: 50px; height: 50px;
+            position: fixed; top: 25px; right: 25px; width: 50px; height: 50px;
             border-radius: 50%; background: var(--card-bg);
             box-shadow: 0 4px 15px var(--shadow);
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10000; /* Parola ekranının üstünde olması için */
-            border: 1px solid rgba(181, 101, 118, 0.2);
-            transition: var(--transition);
+            cursor: pointer; z-index: 10000;
+            border: 1px solid rgba(181,101,118,0.2);
+            transition: var(--smooth);
         }
+        .theme-toggle:hover { transform: rotate(20deg) scale(1.1); }
 
-        /* --- İÇERİK DÜZENİ --- */
-        section {
-            padding: 80px 20px;
-            max-width: 800px; /* Bölümleri daha toplu tutmak için daralttık */
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
+        /* ====== HERO ====== */
+        section { padding: 80px 20px; max-width: 800px; margin: 0 auto; position: relative; z-index: 2; }
 
         .hero {
-            height: 100vh;
-            display: flex; flex-direction: column;
+            height: 100vh; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             text-align: center; padding: 20px; position: relative; z-index: 2;
         }
 
         .hero h1 {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Cormorant Garamond', serif;
             font-size: 4.5rem; font-weight: 700; color: var(--primary-color);
             display: flex; align-items: center; gap: 15px;
+            animation: heroEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
 
-        .heart-main { color: var(--secondary-color); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes heroEntrance {
+            0% { opacity: 0; transform: translateY(-40px) scale(0.8); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .heart-main {
+            color: var(--secondary-color);
+            animation: pulse 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px var(--glow));
+            display: inline-block;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px var(--glow)); }
+            50% { transform: scale(1.18); filter: drop-shadow(0 0 18px var(--glow)); }
+        }
 
         .distance-badge {
-            background: rgba(181, 101, 118, 0.1);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            color: var(--primary-color);
-            margin-top: 15px;
-            font-weight: 500;
-            display: inline-block;
+            background: rgba(181,101,118,0.1); padding: 8px 20px;
+            border-radius: 30px; font-size: 0.9rem; color: var(--primary-color);
+            margin-top: 15px; font-weight: 500; display: inline-block;
             border: 1px dashed var(--primary-color);
+            animation: heroBadge 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
         }
 
-        /* --- ANILAR KUTU DÜZENİ --- */
-        .timeline { 
-            position: relative; 
-            padding-left: 30px; 
-            border-left: 2px solid var(--primary-color);
-            max-width: 600px; /* Zaman tünelini daha dar ve kutu gibi yaptık */
-            margin: 0 auto; 
+        @keyframes heroBadge {
+            0% { opacity: 0; transform: scale(0.6); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
-        .timeline-item { position: relative; margin-bottom: 40px; }
+        /* ====== SAYAÇ ====== */
+        .counter-container {
+            display: flex; gap: 12px; margin: 30px 0;
+            justify-content: center; flex-wrap: wrap;
+            animation: heroCounter 1.4s cubic-bezier(0.34,1.56,0.64,1) 0.5s both;
+        }
+
+        @keyframes heroCounter {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .counter-card {
+            background: var(--card-bg); padding: 14px 16px;
+            border-radius: 16px; box-shadow: 0 8px 25px var(--shadow);
+            min-width: 80px; text-align: center;
+            border: 1px solid rgba(181,101,118,0.15);
+            position: relative; overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .counter-card:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 35px var(--glow);
+        }
+
+        .counter-card.card-glow {
+            animation: cardGlow 0.6s ease-out forwards;
+        }
+
+        @keyframes cardGlow {
+            0% {
+                box-shadow: 0 8px 25px var(--shadow), 0 0 15px rgba(181, 101, 118, 0.4);
+            }
+            50% {
+                box-shadow: 0 8px 25px var(--shadow), 0 0 8px rgba(181, 101, 118, 0.15);
+            }
+            100% {
+                box-shadow: 0 8px 25px var(--shadow);
+            }
+        }
+
+        /* Slot wrapper — clips the sliding digits */
+        .counter-slot {
+            height: 2.8rem;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Fade masks top & bottom */
+        .counter-slot::before,
+        .counter-slot::after {
+            content: '';
+            position: absolute; left: 0; right: 0; height: 30%;
+            z-index: 2; pointer-events: none;
+        }
+        .counter-slot::before {
+            top: 0;
+            background: linear-gradient(to bottom, var(--card-bg), transparent);
+        }
+        .counter-slot::after {
+            bottom: 0;
+            background: linear-gradient(to top, var(--card-bg), transparent);
+        }
+
+        .counter-num {
+            font-size: 2rem; font-weight: 700; color: var(--primary-color);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 2px;
+            display: block;
+            line-height: 2.8rem;
+            position: relative;
+            /* JS handles animation via inline style */
+        }
+
+        .counter-num.slide-in {
+            animation: slotIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .counter-num.slide-out {
+            animation: slotOut 0.38s cubic-bezier(0.55, 0, 0.78, 0) forwards;
+        }
+
+        @keyframes slotIn {
+            0%   { transform: translateY(-110%); opacity: 0; }
+            60%  { transform: translateY(6%);    opacity: 1; }
+            100% { transform: translateY(0%);    opacity: 1; }
+        }
+
+        .counter-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-light); letter-spacing: 1px; font-weight: 500; }
+
+        /* ====== SCROLL REVEAL ====== */
+        .reveal {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 0.9s cubic-bezier(0.34,1.56,0.64,1),
+                        transform 0.9s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Staggered children */
+        .reveal-stagger > * {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.34,1.56,0.64,1),
+                        transform 0.7s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .reveal-stagger.active > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay:0s; }
+        .reveal-stagger.active > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay:0.15s; }
+        .reveal-stagger.active > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay:0.3s; }
+        .reveal-stagger.active > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:0.45s; }
+
+        /* ====== SECTION BAŞLIK GLOW ====== */
+        .section-title {
+            text-align: center; font-family: 'Cormorant Garamond'; font-size: 2.2rem;
+            color: var(--primary-color); margin-bottom: 40px;
+            position: relative; display: inline-block; width: 100%;
+        }
+        .section-title::after {
+            content: attr(data-text);
+            position: absolute; left: 0; top: 0; width: 100%;
+            color: var(--primary-color);
+            filter: blur(12px); opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        .section-title.glowing::after { opacity: 0.5; }
+
+        /* ====== AKORDİYON TİMELİNE ====== */
+        .timeline {
+            position: relative; padding-left: 30px;
+            border-left: 2px solid rgba(181,101,118,0.3); max-width: 600px; margin: 0 auto;
+        }
+
+        /* Animated border fill */
+        .timeline::before {
+            content: '';
+            position: absolute; left: -1px; top: 0; width: 2px; height: 0;
+            background: var(--primary-color);
+            transition: height 1.5s ease;
+        }
+        .timeline.animated::before { height: 100%; }
+
+        .timeline-item { position: relative; margin-bottom: 16px; }
+
         .timeline-item::before {
-            content: ''; position: absolute; left: -37px; top: 8px;
-            width: 12px; height: 12px; border-radius: 50%;
+            content: ''; position: absolute; left: -37px; top: 22px;
+            width: 14px; height: 14px; border-radius: 50%;
             background-color: var(--primary-color); border: 3px solid var(--bg-color);
+            box-shadow: 0 0 0 0 var(--glow);
+            transition: all 0.4s ease; z-index: 2;
         }
 
-        .timeline-content {
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 16px;
-            box-shadow: 0 10px 30px var(--shadow);
-            transition: var(--transition);
+        .timeline-item.open::before {
+            box-shadow: 0 0 0 6px var(--glow);
+            animation: dotPulse 1.5s ease-in-out infinite;
         }
 
-        .featured-image-container {
-            margin: 0 auto 50px auto;
-            max-width: 450px;
-            padding: 12px;
+        @keyframes dotPulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--glow); }
+            50% { box-shadow: 0 0 0 8px rgba(181,101,118,0); }
+        }
+
+        /* AKORDİYON BAŞLIK */
+        .timeline-header {
             background: var(--card-bg);
-            border-radius: 20px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px var(--shadow);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            border: 1px solid rgba(181,101,118,0.1);
+            user-select: none;
+        }
+
+        .timeline-header:hover {
+            transform: translateX(4px);
+            box-shadow: 0 10px 30px var(--glow);
+            border-color: rgba(181,101,118,0.3);
+        }
+
+        .timeline-item.open .timeline-header {
+            border-radius: 16px 16px 0 0;
+            background: linear-gradient(135deg, var(--card-bg), rgba(181,101,118,0.08));
+            border-color: rgba(181,101,118,0.25);
+        }
+
+        .timeline-header-left { display: flex; flex-direction: column; gap: 2px; }
+
+        .timeline-date { font-size: 0.72rem; color: var(--primary-color); font-weight: 600; letter-spacing: 0.5px; }
+        .timeline-title { font-family: 'Cormorant Garamond'; font-size: 1.15rem; color: var(--text-dark); }
+
+        .accordion-arrow {
+            font-size: 0.75rem; color: var(--primary-color); flex-shrink: 0;
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(181,101,118,0.1);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        .timeline-item.open .accordion-arrow { transform: rotate(180deg); background: rgba(181,101,118,0.2); }
+
+        /* AKORDİYON İÇERİK */
+        .timeline-body {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.4s ease,
+                        padding 0.4s ease;
+            opacity: 0;
+            background: var(--card-bg);
+            border-radius: 0 0 16px 16px;
+            border: 1px solid rgba(181,101,118,0.18);
+            border-top: none;
+        }
+
+        .timeline-item.open .timeline-body {
+            max-height: 300px; opacity: 1;
+            padding: 16px 20px 20px 20px;
+            box-shadow: 0 10px 25px var(--shadow);
+        }
+
+        .timeline-body p { font-size: 0.9rem; color: var(--text-light); line-height: 1.7; }
+
+        /* ====== FEATURED IMAGE ====== */
+        .featured-image-container {
+            margin: 0 auto 50px auto; max-width: 450px; padding: 12px;
+            background: var(--card-bg); border-radius: 20px;
             box-shadow: 0 15px 45px var(--shadow);
             transform: rotate(-1.5deg);
-            transition: var(--transition);
+            transition: var(--smooth);
         }
+        .featured-image-container:hover { transform: rotate(0deg) scale(1.02); box-shadow: 0 20px 60px var(--glow); }
         .featured-image-container img { width: 100%; border-radius: 12px; display: block; }
 
-        /* SAYAÇ VE DİĞERLERİ */
-        .counter-container { display: flex; gap: 12px; margin: 30px 0; }
-        .counter-card { background: var(--card-bg); padding: 12px; border-radius: 14px; box-shadow: 0 8px 25px var(--shadow); min-width: 80px; text-align: center;}
-        .counter-num { font-size: 1.8rem; font-weight: 600; color: var(--primary-color); display: block; }
-        .counter-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-light); }
-
+        /* ====== THOUGHTS GRID – PARLAYAN KARTI ====== */
         .thoughts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .thought-card { background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px var(--shadow); }
 
+        .thought-card {
+            background: var(--card-bg); padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+            border: 1px solid rgba(181,101,118,0.1);
+            position: relative; overflow: hidden;
+        }
+
+        .thought-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(181,101,118,0.12), transparent 70%);
+            opacity: 0; transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .thought-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 20px 50px var(--glow);
+            border-color: rgba(181,101,118,0.35);
+        }
+        .thought-card:hover::before { opacity: 1; }
+
+        /* Metin glow efekti */
+        .thought-card:hover h3 {
+            text-shadow: 0 0 20px var(--glow);
+        }
+
+        /* ====== SCROLL PROGRESS ====== */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%; z-index: 99999;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 8px var(--glow);
+        }
+
+        /* ====== KALPLER ====== */
         .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        .heart { position: absolute; color: var(--secondary-color); opacity: 0.3; animation: floatUp 8s linear infinite; bottom: -50px; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; } }
+        .heart {
+            position: absolute; opacity: 0;
+            animation: floatUp 9s ease-out infinite; bottom: -50px;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+            10% { opacity: 0.35; transform: translateY(-5vh) rotate(10deg) scale(1); }
+            85% { opacity: 0.3; }
+            100% { transform: translateY(-115vh) rotate(380deg) scale(0.7); opacity: 0; }
+        }
+
+        /* ====== SCROLL INDICATOR ====== */
+        .scroll-indicator {
+            font-size: 0.9rem; letter-spacing: 2px; color: var(--text-light);
+            animation: bounce 2s ease-in-out infinite;
+            animation-delay: 1.5s; opacity: 0;
+            animation-fill-mode: forwards;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); opacity: 0.7; }
+            50% { transform: translateY(6px); opacity: 1; }
+        }
 
         footer { text-align: center; padding: 60px 20px; color: var(--text-light); font-size: 0.9rem; }
-        .reveal { opacity: 0; transform: translateY(30px); transition: 0.8s all ease; }
-        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .footer-heart {
+            display: inline-block; color: var(--secondary-color);
+            animation: pulse 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 6px var(--glow));
+        }
 
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.8rem; }
@@ -329,7 +705,43 @@
         }
     </style>
 </head>
-<body class="is-locked">
+<body>
+
+    <!-- PASSWORD OVERLAY -->
+    <div class="unlock-flash" id="unlock-flash"></div>
+    <canvas id="bg-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 0; display: none;"></canvas>
+    
+    <!-- Tema butonu password sayfasında -->
+    <div class="theme-toggle" id="password-theme-btn" style="display: none; z-index: 19999;" title="Modu Değiştir">
+        <span class="icon">🌙</span>
+    </div>
+    
+    <div id="password-overlay">
+        <div class="password-card">
+            <div class="lock-wrap" id="lock-wrap">
+                <div class="lock-ring" id="lock-ring"></div>
+                <span class="lock-icon" id="lock-icon">🔒</span>
+            </div>
+            <h2>Bizim Hikayemiz</h2>
+            <p class="subtitle">Tanışma tarihimiz? 🌸</p>
+            <div class="input-wrap">
+                <input type="password" id="pass-input" placeholder="✦  PAROLA  ✦" autocomplete="off">
+            </div>
+            <button class="submit-btn" id="submit-btn" onclick="checkPassword()">Onayla ♥</button>
+            <p class="error-msg" id="error-msg">Yanlış parola, tekrar dene 💔</p>
+            <div class="success-msg" id="success-msg">
+                <div class="success-inner">
+                    <span>🔓</span> Hoş geldin! Yönlendiriliyorsun...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main-content">
+
+    <!-- SCROLL PROGRESS BAR -->
+    <div class="scroll-progress" id="scroll-progress"></div>
 
     <!-- TEMA DEĞİŞTİRME BUTONU -->
     <div class="theme-toggle" id="theme-toggle" title="Modu Değiştir">
@@ -345,7 +757,7 @@
                 <div class="progress-bar-fill" id="progress-fill"></div>
             </div>
             <div class="music-time" id="music-time">0:00</div>
-            <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="30" onchange="changeVolume(this.value)" title="Ses Seviyesi">
+            <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="30" onchange="changeVolume(this.value)">
             <button id="volume-icon" onclick="toggleMute()" title="Sesi Aç/Kapat">🔊</button>
         </div>
     </div>
@@ -354,251 +766,490 @@
         <source src="img/music.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- PAROLA EKRANI -->
-    <div id="password-overlay">
-        <div class="password-box">
-            <h2>Bizim Hikayemiz</h2>
-            <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-light);">Tanışma tarihimiz?</p>
-            <input type="password" id="pass-input" placeholder="Parola">
-            <button onclick="checkPassword()">Onayla</button>
-            <p id="error-msg" style="color: #e56b6f; margin-top: 15px; font-size: 0.8rem; display: none;">...</p>
-            <p id="success-msg"><span class="success-checkmark">✓</span>Parola Doğru!</p>
-        </div>
-    </div>
-
     <div class="hearts-container" id="hearts-container"></div>
 
+    <!-- HERO -->
     <header class="hero">
         <h1>A <span class="heart-main">♥</span> Y</h1>
-        <div class="distance-badge reveal">📍<b>953 KM</b></div>
-        
+        <div class="distance-badge">📍 <b>953 KM</b></div>
+
         <div class="counter-container">
-            <div class="counter-card"><span class="counter-num" id="days">00</span><span class="counter-label">Gün</span></div>
-            <div class="counter-card"><span class="counter-num" id="hours">00</span><span class="counter-label">Saat</span></div>
-            <div class="counter-card"><span class="counter-num" id="minutes">00</span><span class="counter-label">Dakika</span></div>
-            <div class="counter-card"><span class="counter-num" id="seconds">00</span><span class="counter-label">Saniye</span></div>
+            <div class="counter-card">
+                <div class="counter-slot"><span class="counter-num" id="days">00</span></div>
+                <span class="counter-label">Gün</span>
+            </div>
+            <div class="counter-card">
+                <div class="counter-slot"><span class="counter-num" id="hours">00</span></div>
+                <span class="counter-label">Saat</span>
+            </div>
+            <div class="counter-card">
+                <div class="counter-slot"><span class="counter-num" id="minutes">00</span></div>
+                <span class="counter-label">Dakika</span>
+            </div>
+            <div class="counter-card">
+                <div class="counter-slot"><span class="counter-num" id="seconds">00</span></div>
+                <span class="counter-label">Saniye</span>
+            </div>
         </div>
-        <div style="font-size: 0.9rem; letter-spacing: 2px; color: var(--text-light); animation: bounce 2s infinite;">aşağı kaydır ↓</div>
+
+        <div class="scroll-indicator">aşağı kaydır ↓</div>
     </header>
 
+    <!-- ANILAR -->
     <section id="anilar">
-        <h2 class="reveal" style="text-align: center; font-family: 'Playfair Display'; font-size: 2.2rem; color: var(--primary-color); margin-bottom: 40px;">Unutulmaz Anılarımız</h2>
-        
-        <!-- RESİM KUTUSU (DARALTILMIŞ) -->
+        <h2 class="section-title reveal" data-text="Unutulmaz Anılarımız">Unutulmaz Anılarımız</h2>
+
         <div class="featured-image-container reveal">
             <img src="img/resim.png" alt="Bizim Resmimiz">
-            <p style="text-align: center; margin-top: 12px; font-family: 'Playfair Display'; font-style: italic; color: var(--primary-color); font-size: 0.9rem;">
+            <p style="text-align:center;margin-top:12px;font-family:'Cormorant Garamond';font-style:italic;color:var(--primary-color);font-size:0.9rem;">
                 "Mesafeler dokunmaya engel, sevmeye değil..."
             </p>
         </div>
 
-        <!-- ZAMAN TÜNELİ (DARALTILMIŞ KUTU DÜZENİ) -->
-        <div class="timeline">
-            <div class="timeline-item reveal">
-                <div class="timeline-content">
-                    <span style="font-size: 0.75rem; color: var(--primary-color); font-weight: 600;">19 Şubat 2026</span>
-                    <h3 style="font-family: 'Playfair Display'; font-size: 1.2rem; margin: 5px 0;">İlk Tanışma</h3>
-                    <p style="font-size: 0.9rem;">O gün yanına geldiğim de karnımda bir ağrı, içimde kelebekler uçuşuyordu. Çok heyecanlıydım aşık olmuştum sana seninle olmayı herşeyden çok
-                    istiyordum. Çok şükür rabbim seni bana verdi. <3</p>
+        <!-- AKORDİYON TİMELİNE -->
+        <div class="timeline reveal-stagger" id="timeline">
+
+            <div class="timeline-item" id="item-0">
+                <div class="timeline-header" onclick="toggleAccordion(0)">
+                    <div class="timeline-header-left">
+                        <span class="timeline-date">19 Şubat 2026</span>
+                        <span class="timeline-title">İlk Tanışma</span>
+                    </div>
+                    <div class="accordion-arrow">▼</div>
+                </div>
+                <div class="timeline-body">
+                    <p>O gün yanına geldiğimde karnımda bir ağrı, içimde kelebekler uçuşuyordu. Çok heyecanlıydım, aşık olmuştum sana, seninle olmayı her şeyden çok istiyordum. Çok şükür rabbim seni bana verdi. &lt;3</p>
                 </div>
             </div>
-            <div class="timeline-item reveal">
-                <div class="timeline-content">
-                    <span style="font-size: 0.75rem; color: var(--primary-color); font-weight: 600;">Her Gün</span>
-                    <h3 style="font-family: 'Playfair Display'; font-size: 1.2rem; margin: 5px 0;">Mesafelere Rağmen</h3>
-                    <p style="font-size: 0.9rem;">Mesafenin önemi yoktur. Burnunun dibinde olsa ne olacak? Seni anlayamıyorsa, 
-                        ama birisi vardır dünyanın öbür ucunda; en ihtiyaç duyduğun anda 2 satır bile olsa, bir çırpıda yanı başında... Mesafe uzaklık değil, fedakarlıktır.</p>
+
+            <div class="timeline-item" id="item-1">
+                <div class="timeline-header" onclick="toggleAccordion(1)">
+                    <div class="timeline-header-left">
+                        <span class="timeline-date">Her Gün</span>
+                        <span class="timeline-title">Mesafelere Rağmen</span>
+                    </div>
+                    <div class="accordion-arrow">▼</div>
+                </div>
+                <div class="timeline-body">
+                    <p>Mesafenin önemi yoktur. Burnunun dibinde olsa ne olacak? Seni anlayamıyorsa... ama birisi vardır dünyanın öbür ucunda; en ihtiyaç duyduğun anda 2 satır bile olsa, bir çırpıda yanı başında. Mesafe uzaklık değil, fedakarlıktır.</p>
                 </div>
             </div>
-            <div class="timeline-item reveal">
-                <div class="timeline-content">
-                    <span style="font-size: 0.75rem; color: var(--primary-color); font-weight: 600;">9 Haziran 2026</span>
-                    <h3 style="font-family: 'Playfair Display'; font-size: 1.2rem; margin: 5px 0;">İlk buluşmamız (inşallah)</h3>
-                    <p style="font-size: 0.9rem;">Burayı da 9 haziran da birlikte yazacağız <33</p>
+
+            <div class="timeline-item" id="item-2">
+                <div class="timeline-header" onclick="toggleAccordion(2)">
+                    <div class="timeline-header-left">
+                        <span class="timeline-date">9 Haziran 2026</span>
+                        <span class="timeline-title">İlk Buluşmamız (inşallah)</span>
+                    </div>
+                    <div class="accordion-arrow">▼</div>
+                </div>
+                <div class="timeline-body">
+                    <p>Burayı da 9 Haziran'da birlikte yazacağız &lt;33 ✨</p>
                 </div>
             </div>
+
         </div>
     </section>
 
+    <!-- DÜŞÜNCELER -->
     <section id="gorusler">
-        <div class="thoughts-grid">
-            <div class="thought-card reveal">
-                <h3 style="color: var(--primary-color); margin-bottom: 10px; font-family: 'Playfair Display';">Benim Gözümden Sen</h3>
-                <p style="font-size: 0.9rem;">Hayatıma neşe ve huzur katan canım sevgilim. Sabah uyanır uyanmaz aklıma gelen ilk huzurumsun. Kalbimin içinde yaşayan bir parçam gibisin. En çok güvendiğim, en çok özlediğim ve yanındayken en çok kendim olabildiğim tek insansın.
-Seni düşününce içimdeki o sıcaklık hiç azalmıyor. Çok şanslı hissediyorum seni bulduğum için. İyi varsın hayatımm seni çokk seviyorumm <333</p>
+        <div class="thoughts-grid reveal-stagger">
+            <div class="thought-card">
+                <h3 style="color:var(--primary-color);margin-bottom:10px;font-family:'Cormorant Garamond';">Benim Gözümden Sen</h3>
+                <p style="font-size:0.9rem;">Hayatıma neşe ve huzur katan canım sevgilim. Sabah uyanır uyanmaz aklıma gelen ilk huzurumsun. Kalbimin içinde yaşayan bir parçam gibisin. En çok güvendiğim, en çok özlediğim ve yanındayken en çok kendim olabildiğim tek insansın. Seni düşününce içimdeki o sıcaklık hiç azalmıyor. Çok şanslı hissediyorum seni bulduğum için. İyi varsın hayatımm seni çokk seviyorumm &lt;333</p>
             </div>
-            <div class="thought-card reveal">
-                <h3 style="color: var(--primary-color); margin-bottom: 10px; font-family: 'Playfair Display';">Bizim Hakkımızda</h3>
-                <p style="font-size: 0.9rem;">Bence bizim ilişkimiz bayağı özel herkesin yaşadığı sıradan bir şey gibi gelmiyor bana, seninle konuşurken gülerken saçma sapan şeylere bile anlam yüklerken içim huzur doluyor en sevdiğim şeylerden biri de şu yanında kasmıyorum 
-                    olduğum gibi olabiliyorum ve bu benim için çok önemli bazen sana bakınca iyi ki girmiş hayatıma diyorum içimden, çünkü sen sadece sevgilim değil aynı zamanda yanında güvende hissettiğim sesini duyunca bile mutlu huzurlu olduğum kişisin. Seninle geleceği düşünmek bile çok güzel hissettiriyor seni çok seviyorum <33</p>
+            <div class="thought-card">
+                <h3 style="color:var(--primary-color);margin-bottom:10px;font-family:'Cormorant Garamond';">Bizim Hakkımızda</h3>
+                <p style="font-size:0.9rem;">Bence bizim ilişkimiz bayağı özel, herkesin yaşadığı sıradan bir şey gibi gelmiyor bana. Seninle konuşurken, gülerken, saçma sapan şeylere bile anlam yüklerken içim huzur doluyor. En sevdiğim şeylerden biri de şu: yanında kasmıyorum, olduğum gibi olabiliyorum. Bazen sana bakınca iyi ki girmiş hayatıma diyorum içimden. Seni çok seviyorum &lt;33</p>
             </div>
         </div>
     </section>
 
     <footer>
-        <p>A <span>♥</span> Y | Sonsuza Dek</p>
+        <p>A <span class="footer-heart">♥</span> Y | Sonsuza Dek</p>
     </footer>
 
+    </div>
+
     <script>
-        // === PAROLA KONTROLÜ ===
+        // === SIFRELI SAYFA GÖSTER/GİZLE ===
+        const SITE_PASSWORD = "19subat";
+        let isAuthenticated = sessionStorage.getItem('site-auth') === 'true';
+        
+        // === CANVAS PARTICLE SYSTEM ===
+        let canvas, ctx, particles = [];
+
+        function initializeCanvasParticles() {
+            canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            particles = [];
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const isDarkMode = () => document.body.classList.contains('dark-mode');
+
+            class Particle {
+                constructor() { this.reset(true); }
+                reset(init) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = init ? Math.random() * canvas.height : canvas.height + 20;
+                    this.size = Math.random() * 14 + 6;
+                    this.speed = Math.random() * 0.5 + 0.2;
+                    this.opacity = Math.random() * 0.25 + 0.05;
+                    this.drift = (Math.random() - 0.5) * 0.4;
+                    this.rot = Math.random() * Math.PI * 2;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                    this.type = Math.random() < 0.6 ? '♥' : Math.random() < 0.5 ? '✦' : '·';
+                }
+                update() {
+                    this.y -= this.speed;
+                    this.x += this.drift;
+                    this.rot += this.rotSpeed;
+                    if (this.y < -30) this.reset(false);
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rot);
+                    ctx.font = `${this.size}px serif`;
+                    ctx.fillStyle = isDarkMode() ? '#ff8fa3' : '#d4687c';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.type, 0, 0);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < 55; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // === FLOATING HEARTS ===
+        const floatEmojis = ['💗','💓','💕','💖','💝','🌸','✨','💞'];
+        function createFloatHeart() {
+            const el = document.createElement('div');
+            el.className = 'float-heart';
+            el.textContent = floatEmojis[Math.floor(Math.random() * floatEmojis.length)];
+            const dur = (Math.random() * 6 + 7);
+            const size = (Math.random() * 18 + 14);
+            const rotStart = (Math.random() - 0.5) * 30;
+            const rotEnd = rotStart + (Math.random() - 0.5) * 60;
+            el.style.cssText = `
+                left: ${Math.random() * 95}vw;
+                --dur: ${dur}s;
+                --size: ${size}px;
+                --rot-start: ${rotStart}deg;
+                --rot-end: ${rotEnd}deg;
+            `;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), dur * 1000);
+        }
+
+        // Sayfaları göster/gizle
+        function updatePageVisibility() {
+            const mainContent = document.getElementById('main-content');
+            const passwordOverlay = document.getElementById('password-overlay');
+            const canvasEl = document.getElementById('bg-canvas');
+            const themeBtn = document.getElementById('password-theme-btn');
+
+            if (isAuthenticated) {
+                mainContent.style.display = 'block';
+                passwordOverlay.style.display = 'none';
+                if (canvasEl) canvasEl.style.display = 'none';
+                if (themeBtn) themeBtn.style.display = 'none';
+                // Floating hearts'ı durdur
+                window.floatingHeartsInterval && clearInterval(window.floatingHeartsInterval);
+            } else {
+                mainContent.style.display = 'none';
+                passwordOverlay.style.display = 'flex';
+                if (canvasEl) canvasEl.style.display = 'block';
+                if (themeBtn) themeBtn.style.display = 'flex';
+                // Canvas partikülleri başlat
+                initializeCanvasParticles();
+                // Floating hearts'ı başlat
+                window.floatingHeartsInterval = setInterval(createFloatHeart, 900);
+                for (let i = 0; i < 8; i++) setTimeout(createFloatHeart, i * 300);
+            }
+        }
+        
         function checkPassword() {
-            const input = document.getElementById('pass-input').value.toLowerCase();
-            const overlay = document.getElementById('password-overlay');
+            const input = document.getElementById('pass-input');
+            const val = input.value.toLowerCase().trim();
             const error = document.getElementById('error-msg');
             const success = document.getElementById('success-msg');
+            const btn = document.getElementById('submit-btn');
 
-            if (input === '19subat') {
+            if (val === SITE_PASSWORD) {
                 error.style.display = 'none';
-                success.style.display = 'block';
-                document.getElementById('pass-input').disabled = true;
-                document.querySelector('.password-box button').disabled = true;
-                
-                // Müzik 2 saniye sonra başlat
+                input.disabled = true;
+                btn.disabled = true;
+
+                unlockEffect();
+
                 setTimeout(() => {
-                    const audio = document.getElementById('music-audio');
-                    audio.play().catch(err => console.log('Müzik oynatma hatası:', err));
-                    document.getElementById('play-btn').textContent = '⏸️';
-                }, 2000);
-                
-                setTimeout(() => {
-                    overlay.style.opacity = '0';
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        document.body.classList.remove('is-locked');
-                    }, 500);
-                }, 1500);
+                    success.style.display = 'block';
+                }, 400);
+
                 sessionStorage.setItem('site-auth', 'true');
+                isAuthenticated = true;
+                setTimeout(() => {
+                    updatePageVisibility();
+                }, 2200);
+
             } else {
                 error.style.display = 'block';
                 success.style.display = 'none';
-                document.getElementById('pass-input').value = '';
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+                input.value = '';
+                input.focus();
             }
         }
 
-        document.getElementById('pass-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
-        if (sessionStorage.getItem('site-auth') === 'true') { document.getElementById('password-overlay').style.display = 'none'; }
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePageVisibility();
+            const passInput = document.getElementById('pass-input');
+            if (passInput) passInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkPassword();
+            });
 
-        // === MÜZİK OYNATICI ===
+            // Tema butonu password sayfasında
+            const themeBtn = document.getElementById('password-theme-btn');
+            if (themeBtn) {
+                const themeBtnIcon = themeBtn.querySelector('.icon');
+                themeBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const isDark = document.body.classList.contains('dark-mode');
+                    themeBtnIcon.textContent = isDark ? '☀️' : '🌙';
+                    localStorage.setItem('theme-pref', isDark ? 'dark' : 'light');
+                });
+                // İlk yükleme sırasında tema tercihini uygula
+                if (localStorage.getItem('theme-pref') === 'dark') { 
+                    themeBtnIcon.textContent = '☀️'; 
+                }
+            }
+        });
+
+        // === UNLOCK EFFECT ===
+        function unlockEffect() {
+            const lockWrap = document.getElementById('lock-wrap');
+            const lockIcon = document.getElementById('lock-icon');
+            const flash = document.getElementById('unlock-flash');
+
+            lockWrap.classList.add('unlocking');
+            setTimeout(() => { lockIcon.textContent = '🔓'; }, 350);
+
+            flash.classList.add('active');
+
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const burstEmojis = ['💗','💖','💕','✨','🌸','💓','💞','⭐'];
+            for (let i = 0; i < 18; i++) {
+                const b = document.createElement('div');
+                b.classList.add('burst-heart', 'active');
+                b.textContent = burstEmojis[i % burstEmojis.length];
+                const angle = (i / 18) * Math.PI * 2;
+                const dist = 120 + Math.random() * 160;
+                const bx = Math.cos(angle) * dist;
+                const by = Math.sin(angle) * dist - 80;
+                const fs = (Math.random() * 16 + 12) + 'px';
+                const bd = (Math.random() * 0.5 + 0.7) + 's';
+                const br = (Math.random() * 360) + 'deg';
+                b.style.cssText = `left:${cx}px; top:${cy}px; --bx:${bx}px; --by:${by}px; --fs:${fs}; --bd:${bd}; --br:${br};`;
+                document.body.appendChild(b);
+                setTimeout(() => b.remove(), 1500);
+            }
+        }
+        
         const audio = document.getElementById('music-audio');
         const playBtn = document.getElementById('play-btn');
-        const progressBar = document.getElementById('progress-bar');
         const progressFill = document.getElementById('progress-fill');
         const musicTime = document.getElementById('music-time');
         const volumeSlider = document.getElementById('volume-slider');
         const volumeIcon = document.getElementById('volume-icon');
         let isMuted = false;
 
-        // Parola geçildiyse müzik başlat
-        if (sessionStorage.getItem('site-auth') === 'true') {
-            setTimeout(() => {
-                audio.play().catch(err => console.log('Müzik oynatma hatası:', err));
-                playBtn.textContent = '⏸️';
-            }, 300);
-        }
+        setTimeout(() => {
+            audio.play().catch(() => {});
+            playBtn.textContent = '⏸️';
+        }, 300);
 
         function togglePlay() {
-            if (audio.paused) {
-                audio.play();
-                playBtn.textContent = '⏸️';
-            } else {
-                audio.pause();
-                playBtn.textContent = '▶️';
-            }
+            if (audio.paused) { audio.play(); playBtn.textContent = '⏸️'; }
+            else { audio.pause(); playBtn.textContent = '▶️'; }
         }
-
-        function changeVolume(value) {
-            audio.volume = value / 100;
-            updateVolumeIcon();
-            isMuted = false;
-            volumeIcon.textContent = '🔊';
-        }
-
+        function changeVolume(v) { audio.volume = v / 100; updateVolumeIcon(); isMuted = false; }
         function toggleMute() {
             isMuted = !isMuted;
-            if (isMuted) {
-                audio.volume = 0;
-                volumeIcon.textContent = '🔇';
-            } else {
-                audio.volume = volumeSlider.value / 100;
-                updateVolumeIcon();
-            }
+            audio.volume = isMuted ? 0 : volumeSlider.value / 100;
+            updateVolumeIcon();
         }
-
         function updateVolumeIcon() {
-            const vol = audio.volume;
-            if (vol === 0) volumeIcon.textContent = '🔇';
-            else if (vol < 0.5) volumeIcon.textContent = '🔉';
-            else volumeIcon.textContent = '🔊';
+            const v = audio.volume;
+            volumeIcon.textContent = v === 0 ? '🔇' : v < 0.5 ? '🔉' : '🔊';
         }
-
         function seekMusic(e) {
-            const rect = progressBar.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            audio.currentTime = percent * audio.duration;
+            const bar = document.getElementById('progress-bar');
+            audio.currentTime = (e.clientX - bar.getBoundingClientRect().left) / bar.offsetWidth * audio.duration;
         }
-
-        function updateProgress() {
-            if (audio.duration) {
-                const percent = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = percent + '%';
-                
-                const mins = Math.floor(audio.currentTime / 60);
-                const secs = Math.floor(audio.currentTime % 60);
-                musicTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-            }
-        }
-
-        audio.addEventListener('timeupdate', updateProgress);
-        audio.addEventListener('ended', () => {
-            playBtn.textContent = '▶️';
+        audio.addEventListener('timeupdate', () => {
+            if (!audio.duration) return;
+            progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+            const m = Math.floor(audio.currentTime / 60), s = Math.floor(audio.currentTime % 60);
+            musicTime.textContent = `${m}:${s.toString().padStart(2,'0')}`;
         });
-
-        // Varsayılan ses seviyesi
+        audio.addEventListener('ended', () => { playBtn.textContent = '▶️'; });
         audio.volume = 0.3;
 
-        // === KOYU MOD (Parola ekranında da çalışır) ===
+        // === KOYU MOD ===
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = themeToggle.querySelector('.icon');
-        
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             themeIcon.textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('theme-pref', isDark ? 'dark' : 'light');
         });
+        if (localStorage.getItem('theme-pref') === 'dark') { document.body.classList.add('dark-mode'); themeIcon.textContent = '☀️'; }
 
-        if(localStorage.getItem('theme-pref') === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeIcon.textContent = '☀️';
+        // === SAYAÇ – SLOT MAKİNESİ ANİMASYONU ===
+        const startDate = new Date(2026, 1, 19);
+        const els = {
+            days:    document.getElementById('days'),
+            hours:   document.getElementById('hours'),
+            minutes: document.getElementById('minutes'),
+            seconds: document.getElementById('seconds')
+        };
+
+        function slotAnimate(el, newVal) {
+            if (el._val === newVal) return;
+            el._val = newVal;
+
+            const slot = el.parentElement; // .counter-slot
+            const card = slot.parentElement; // .counter-card
+
+            // 1. Mevcut rakamı aşağı doğru uçur
+            el.classList.remove('slide-in');
+            el.classList.add('slide-out');
+
+            // 2. Animasyon bitince yeni rakamı yukarıdan indir
+            setTimeout(() => {
+                el.textContent = newVal;
+                el.classList.remove('slide-out');
+                el.style.color = 'var(--primary-color)';
+                // Reflow zorla
+                void el.offsetWidth;
+                el.classList.add('slide-in');
+                
+                // Kart'a glow ekle
+                card.classList.remove('card-glow');
+                void card.offsetWidth;
+                card.classList.add('card-glow');
+
+                // Temizle
+                setTimeout(() => {
+                    el.classList.remove('slide-in');
+                    card.classList.remove('card-glow');
+                }, 600);
+            }, 280); // slide-out süresinin biraz altı → yumuşak geçiş
         }
 
-        // === SAYAÇ ===
-        const startDate = new Date(2026, 2, 19); 
         function updateCounter() {
-            const now = new Date();
-            const diff = now - startDate;
-            document.getElementById('days').textContent = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-            document.getElementById('hours').textContent = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
-            document.getElementById('minutes').textContent = Math.floor((diff / (1000 * 60)) % 60).toString().padStart(2, '0');
-            document.getElementById('seconds').textContent = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+            const diff = Date.now() - startDate;
+            slotAnimate(els.days,    Math.floor(diff / 864e5).toString().padStart(2, '0'));
+            slotAnimate(els.hours,   Math.floor((diff / 36e5) % 24).toString().padStart(2, '0'));
+            slotAnimate(els.minutes, Math.floor((diff / 6e4) % 60).toString().padStart(2, '0'));
+            slotAnimate(els.seconds, Math.floor((diff / 1e3) % 60).toString().padStart(2, '0'));
         }
+
+        // İlk değerleri animasyonsuz yaz
+        const _d = Date.now() - startDate;
+        els.days.textContent    = Math.floor(_d / 864e5).toString().padStart(2, '0');
+        els.hours.textContent   = Math.floor((_d / 36e5) % 24).toString().padStart(2, '0');
+        els.minutes.textContent = Math.floor((_d / 6e4) % 60).toString().padStart(2, '0');
+        els.seconds.textContent = Math.floor((_d / 1e3) % 60).toString().padStart(2, '0');
+        Object.values(els).forEach(el => el._val = el.textContent);
+
         setInterval(updateCounter, 1000);
-        updateCounter();
 
-        // === REVEAL VE KALPLER ===
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        // === AKORDİYON ===
+        function toggleAccordion(idx) {
+            const item = document.getElementById('item-' + idx);
+            const isOpen = item.classList.contains('open');
 
+            // Tümünü kapat
+            document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('open'));
+
+            // Tıklanan açık değilse aç
+            if (!isOpen) item.classList.add('open');
+        }
+
+        // İlkini otomatik aç (opsiyonel)
+        // toggleAccordion(0);
+
+        // === SCROLL EFFECTS ===
+        const scrollProgress = document.getElementById('scroll-progress');
+
+        function onScroll() {
+            // Progress bar
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            scrollProgress.style.width = (scrollTop / scrollHeight * 100) + '%';
+
+            // Reveal
+            document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+                if (el.getBoundingClientRect().top < window.innerHeight * 0.88) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Timeline border animation
+            const timeline = document.getElementById('timeline');
+            if (timeline && timeline.getBoundingClientRect().top < window.innerHeight * 0.9) {
+                timeline.classList.add('animated');
+            }
+
+            // Section title glow
+            document.querySelectorAll('.section-title').forEach(el => {
+                const inView = el.getBoundingClientRect().top < window.innerHeight * 0.8;
+                el.classList.toggle('glowing', inView);
+            });
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll(); // İlk çağrı
+
+        // === KALPLER ===
+        // ♥ daha sık çıksın: 8 adet ♥, diğerleri 1'er adet
+        const floatingSymbols = [
+            '♥','♥','♥','♥','♥','♥','♥','♥',
+            '💗','💖','💕','✨','🌸','💓','💞','⭐'
+        ];
         function createHeart() {
             const heart = document.createElement('div');
-            heart.classList.add('heart'); heart.innerHTML = '♥';
+            heart.classList.add('heart');
+            heart.textContent = floatingSymbols[Math.floor(Math.random() * floatingSymbols.length)];
+            // ♥ ise pembe renk ver, diğerleri emoji rengi kalsın
+            if (heart.textContent === '♥') heart.style.color = 'var(--secondary-color)';
             heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.fontSize = (Math.random() * 15 + 10) + 'px';
-            heart.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            heart.style.fontSize = (Math.random() * 14 + 9) + 'px';
+            heart.style.animationDuration = (Math.random() * 5 + 6) + 's';
+            heart.style.animationDelay = (Math.random() * 2) + 's';
             document.getElementById('hearts-container').appendChild(heart);
-            setTimeout(() => heart.remove(), 10000);
+            setTimeout(() => heart.remove(), 11000);
         }
         setInterval(createHeart, 800);
     </script>
