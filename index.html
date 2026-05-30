@@ -48,7 +48,7 @@
         #password-overlay {
             position: fixed;
             inset: 0;
-            background: var(--bg-color);
+            /* Arka plan opaklığı kaldırıldı – böylece canvas ve kalpler görünür */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -117,6 +117,7 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            /* Kart opaklığı korunuyor */
         }
 
         .password-card h2 {
@@ -478,6 +479,11 @@
             0%   { transform: translateY(-110%); opacity: 0; }
             60%  { transform: translateY(6%);    opacity: 1; }
             100% { transform: translateY(0%);    opacity: 1; }
+        }
+
+        @keyframes slotOut {
+            0%   { transform: translateY(0%);    opacity: 1; }
+            100% { transform: translateY(110%); opacity: 0; }
         }
 
         .counter-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-light); letter-spacing: 1px; font-weight: 500; }
@@ -1003,6 +1009,14 @@
                     success.style.display = 'block';
                 }, 400);
 
+                // Müziği başlat (kullanıcı etkileşimi ile)
+                const music = document.getElementById('music-audio');
+                if (music) {
+                    music.play().catch(() => {});
+                    const playBtn = document.getElementById('play-btn');
+                    if (playBtn) playBtn.textContent = '⏸️';
+                }
+
                 sessionStorage.setItem('site-auth', 'true');
                 isAuthenticated = true;
                 setTimeout(() => {
@@ -1082,10 +1096,9 @@
         const volumeIcon = document.getElementById('volume-icon');
         let isMuted = false;
 
-        setTimeout(() => {
-            audio.play().catch(() => {});
-            playBtn.textContent = '⏸️';
-        }, 300);
+        // Başlangıçta otomatik çalmaya çalışmayı kaldırdık, şifre ile başlayacak.
+        // (Eğer sayfa yeniden yüklenir ve oturum açıksa çalmasını isterseniz aşağıdaki satırı aktif edebilirsiniz.)
+        // if (isAuthenticated) { audio.play().catch(()=>{}); playBtn.textContent = '⏸️'; }
 
         function togglePlay() {
             if (audio.paused) { audio.play(); playBtn.textContent = '⏸️'; }
@@ -1126,7 +1139,7 @@
         if (localStorage.getItem('theme-pref') === 'dark') { document.body.classList.add('dark-mode'); themeIcon.textContent = '☀️'; }
 
         // === SAYAÇ – SLOT MAKİNESİ ANİMASYONU ===
-        const startDate = new Date(2026, 1, 19);
+        const startDate = new Date(2026, 2, 19);
         const els = {
             days:    document.getElementById('days'),
             hours:   document.getElementById('hours'),
@@ -1197,9 +1210,6 @@
             if (!isOpen) item.classList.add('open');
         }
 
-        // İlkini otomatik aç (opsiyonel)
-        // toggleAccordion(0);
-
         // === SCROLL EFFECTS ===
         const scrollProgress = document.getElementById('scroll-progress');
 
@@ -1233,7 +1243,6 @@
         onScroll(); // İlk çağrı
 
         // === KALPLER ===
-        // ♥ daha sık çıksın: 8 adet ♥, diğerleri 1'er adet
         const floatingSymbols = [
             '♥','♥','♥','♥','♥','♥','♥','♥',
             '💗','💖','💕','✨','🌸','💓','💞','⭐'
@@ -1242,7 +1251,6 @@
             const heart = document.createElement('div');
             heart.classList.add('heart');
             heart.textContent = floatingSymbols[Math.floor(Math.random() * floatingSymbols.length)];
-            // ♥ ise pembe renk ver, diğerleri emoji rengi kalsın
             if (heart.textContent === '♥') heart.style.color = 'var(--secondary-color)';
             heart.style.left = Math.random() * 100 + 'vw';
             heart.style.fontSize = (Math.random() * 14 + 9) + 'px';
